@@ -75,6 +75,8 @@ class LeggedRobot(BaseTask):
         self._init_buffers()
         self._prepare_reward_function()
         self.init_done = True
+        if hasattr(self, "_custom_init"):
+            self._custom_init(cfg)
 
     def step(self, actions):
         """ Apply actions, simulate, call self.post_physics_step()
@@ -84,6 +86,7 @@ class LeggedRobot(BaseTask):
         """
         clip_actions = self.cfg.normalization.clip_actions
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
+        self.pre_physics_step()
         # step physics and render each frame
         self.render()
         for _ in range(self.cfg.control.decimation):
@@ -161,6 +164,8 @@ class LeggedRobot(BaseTask):
         if self.cfg.commands.curriculum and (self.common_step_counter % self.max_episode_length==0):
             self.update_command_curriculum(env_ids)
         
+        if hasattr(self, "_custom_reset"):
+            self._custom_reset(env_ids)
         # reset robot states
         self._reset_dofs(env_ids)
         self._reset_root_states(env_ids)
@@ -348,7 +353,7 @@ class LeggedRobot(BaseTask):
             self.commands[env_ids, 2] = torch_rand_float(self.command_ranges["ang_vel_yaw"][0], self.command_ranges["ang_vel_yaw"][1], (len(env_ids), 1), device=self.device).squeeze(1)
 
         # set small commands to zero
-        self.commands[env_ids, :2] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.2).unsqueeze(1)
+        self.commands[env_ids, :2] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.05).unsqueeze(1)
 
     def _compute_torques(self, actions):
         """ Compute torques from actions.
@@ -494,6 +499,7 @@ class LeggedRobot(BaseTask):
         self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
         self.dof_pos = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 0]
         self.dof_vel = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 1]
+        self.base_pos = self.root_states[:, 0:3]
         self.base_quat = self.root_states[:, 3:7]
 
         self.contact_forces = gymtorch.wrap_tensor(net_contact_forces).view(self.num_envs, -1, 3) # shape: num_envs, num_bodies, xyz axis
@@ -689,6 +695,11 @@ class LeggedRobot(BaseTask):
         self.feet_indices = torch.zeros(len(feet_names), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], feet_names[i])
+        
+        # print('foot_name:', self.cfg.asset.foot_name)
+        # print('body_names:',body_names)
+        # print('feet_names:',feet_names)
+        # print('feet_indices:',self.feet_indices)
 
         self.penalised_contact_indices = torch.zeros(len(penalized_contact_names), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(penalized_contact_names)):
@@ -748,12 +759,12 @@ class LeggedRobot(BaseTask):
         self.gym.refresh_rigid_body_state_tensor(self.sim)
         sphere_geom = gymutil.WireframeSphereGeometry(0.02, 4, 4, None, color=(1, 1, 0))
         for i in range(self.num_envs):
-            base_pos = (self.root_states[i, :3]).cpu().numpy()
+            self.base_pos = (self.root_states[i, :3]).cpu().numpy()
             heights = self.measured_heights[i].cpu().numpy()
             height_points = quat_apply_yaw(self.base_quat[i].repeat(heights.shape[0]), self.height_points[i]).cpu().numpy()
             for j in range(heights.shape[0]):
-                x = height_points[j, 0] + base_pos[0]
-                y = height_points[j, 1] + base_pos[1]
+                x = height_points[j, 0] + self.base_pos[0]
+                y = height_points[j, 1] + self.base_pos[1]
                 z = heights[j]
                 sphere_pose = gymapi.Transform(gymapi.Vec3(x, y, z), r=None)
                 gymutil.draw_lines(sphere_geom, self.gym, self.viewer, self.envs[i], sphere_pose) 
@@ -823,7 +834,8 @@ class LeggedRobot(BaseTask):
     
     def _reward_orientation(self):
         # Penalize non flat base orientation
-        return torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1)
+        orientation_error = torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1)
+        return orientation_error
 
     def _reward_base_height(self):
         # Penalize base height away from target
@@ -844,7 +856,7 @@ class LeggedRobot(BaseTask):
     
     def _reward_action_rate(self):
         # Penalize changes in actions
-        return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
+        return torch.sum(torch.square( (self.last_actions - self.actions)/self.dt ), dim=1)
     
     def _reward_collision(self):
         # Penalize collisions on selected bodies
