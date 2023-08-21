@@ -44,7 +44,8 @@ from .bolt6.bolt6 import Bolt6
 from .bolt6.bolt6_config import Bolt6Cfg, Bolt6CfgPPO
 from .bolt10.bolt10 import Bolt10
 from .bolt10.bolt10_config import Bolt10Cfg, Bolt10CfgPPO
-
+from .bolt12.bolt12 import Bolt12
+from .bolt12.bolt12_config import Bolt12Cfg, Bolt12CfgPPO
 
 import os
 
@@ -58,3 +59,5 @@ task_registry.register( "cassie", Cassie, CassieRoughCfg(), CassieRoughCfgPPO() 
 task_registry.register( "tocabi", Tocabi, TocabiRoughCfg(), TocabiRoughCfgPPO() )
 task_registry.register( "bolt6", Bolt6, Bolt6Cfg(), Bolt6CfgPPO() )
 task_registry.register( "bolt10", Bolt10, Bolt10Cfg(), Bolt10CfgPPO() )
+task_registry.register( "bolt12", Bolt12, Bolt12Cfg(), Bolt12CfgPPO() )
+

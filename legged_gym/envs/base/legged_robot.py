@@ -188,6 +188,7 @@ class LeggedRobot(BaseTask):
             self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
         if self.cfg.commands.curriculum:
             self.extras["episode"]["max_command_x"] = self.command_ranges["lin_vel_x"][1]
+            self.extras["episode"]["max_command_yaw"] = self.command_ranges["ang_vel_yaw"][1]
         # send timeout info to the algorithm
         if self.cfg.env.send_timeouts:
             self.extras["time_outs"] = self.time_out_buf
@@ -653,6 +654,7 @@ class LeggedRobot(BaseTask):
 
         # save body names from the asset
         body_names = self.gym.get_asset_rigid_body_names(robot_asset)
+        print("body_names: \n", body_names)
         self.dof_names = self.gym.get_asset_dof_names(robot_asset)
         self.num_bodies = len(body_names)
         self.num_dofs = len(self.dof_names)

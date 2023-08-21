@@ -33,8 +33,10 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 class Bolt6Cfg( LeggedRobotCfg ):
     class env( LeggedRobotCfg.env):
         num_envs = 4096 # robot count 4096
-        num_observations = 30
+        num_observations = 33
         '''
+        self.contacts: [2]
+        self.base_z: [1]
         self.base_lin_vel:  torch.Size([4096, 3])
         self.base_ang_vel:  torch.Size([4096, 3])
         self.projected_gravity:  torch.Size([4096, 3])
@@ -43,13 +45,13 @@ class Bolt6Cfg( LeggedRobotCfg ):
         self.dof_vel:  torch.Size([4096, 6])
         self.actions:  torch.Size([4096, 6])
 
-        3 + 3 + 3 + 3 + 6 + 6 + 6 = 30(num_observation)
+        2 + 1 + 3 + 3 + 3 + 3 + 6 + 6 + 6 = 33(num_observation)
         '''
         num_privileged_obs = None # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise 
         num_actions = 6 # robot actuation
         env_spacing = 3.  # not used with heightfields/trimeshes 
         send_timeouts = True # send time out information to the algorithm
-        episode_length_s = 100 # episode length in seconds
+        episode_length_s = 10 # episode length in seconds
 
     class terrain( LeggedRobotCfg.terrain):
         mesh_type = 'plane' # Rui
@@ -59,7 +61,7 @@ class Bolt6Cfg( LeggedRobotCfg ):
         curriculum = False # Rui
         static_friction = 1.0
         dynamic_friction = 1.0
-        restitution = 0.
+        restitution = 0.3
         # rough terrain only:
         measure_heights = False
         measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # 1mx1.6m rectangle (without center line)
@@ -77,10 +79,10 @@ class Bolt6Cfg( LeggedRobotCfg ):
         slope_treshold = 0.75 # slopes above this threshold will be corrected to vertical surfaces # Rui
 
     class commands( LeggedRobotCfg.commands):
-        curriculum = False
-        max_curriculum = 1.
+        curriculum = True
+        max_curriculum = 10.0
         num_commands = 3 # default: lin_vel_x, lin_vel_y, ang_vel_yaw, heading (in heading mode ang_vel_yaw is recomputed from heading error)
-        resampling_time = 10. # time before command are changed[s]
+        resampling_time = 5. # time before command are changed[s]
         heading_command = False # if true: compute ang vel command from heading error
         
         class ranges( LeggedRobotCfg.commands.ranges ):
@@ -98,16 +100,16 @@ class Bolt6Cfg( LeggedRobotCfg ):
         default_joint_angles = { # = target angles [rad] when action = 0.0
             'FL_HAA': 0.,
             # 'hip_rotation_left': 0.,
-            'FL_HFE': -0.1,
+            'FL_HFE': 0.2,
             # 'thigh_joint_left': -1.8,
-            'FL_KFE': 0.25,
+            'FL_KFE': -0.4,
             'FL_ANKLE': 0.,
 
-            'FR_HAA': -0.,
+            'FR_HAA': 0.,
             # 'hip_rotation_right': 0.,
-            'FR_HFE': -0.1,
+            'FR_HFE': 0.2,
             # 'thigh_joint_right': -1.8,
-            'FR_KFE': 0.25,
+            'FR_KFE': -0.4,
             'FR_ANKLE': 0.
         }
 
@@ -153,7 +155,7 @@ class Bolt6Cfg( LeggedRobotCfg ):
     class asset( LeggedRobotCfg.asset ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/bolt6/urdf/bolt6.urdf'
         name = "bolt6"
-        foot_name = 'FR_FOOT'
+        foot_name = 'LOWER_LEG'
         penalize_contacts_on = []
         # penalize_contacts_on = ['bolt_lower_leg_right_side', 'bolt_body', 'bolt_hip_fe_left_side', 'bolt_hip_fe_right_side', ' bolt_lower_leg_left_side', 'bolt_shoulder_fe_left_side', 'bolt_shoulder_fe_right_side', 'bolt_trunk', 'bolt_upper_leg_left_side', 'bolt_upper_leg_right_side']
         # penalize_contacts_on = ['base_link', 'FR_SHOULDER', 'FL_SHOULDER', 'FR_LOWER_LEG', 'FL_LOWER_LEG']
@@ -172,52 +174,86 @@ class Bolt6Cfg( LeggedRobotCfg ):
         density = 0.001
         angular_damping = 0.
         linear_damping = 0.
-        max_angular_velocity = 5.
-        max_linear_velocity = 5.
+        max_angular_velocity = 20.
+        max_linear_velocity = 20.
         armature = 0.
         thickness = 0.01
 
     class domain_rand:
-        randomize_friction = True
+        randomize_friction = False
         friction_range = [0.5, 1.25]
         randomize_base_mass = False
         added_mass_range = [-1., 1.]
         push_robots = True
-        push_interval_s = 15
-        max_push_vel_xy = 1.
+        push_interval_s = 5
+        max_push_vel_xy = 0.3
+
+        ext_force_robots = False
+        ext_force_vector_6d = [0, -20, 0, 0, 0, 0]
+        ext_force_start_time = 5.0
+        ext_force_duration = 0.2
 
     class rewards( LeggedRobotCfg.rewards ):
         class scales( LeggedRobotCfg.rewards.scales ):
-            termination = -50.
-            tracking_lin_vel = 8
-            tracking_ang_vel = 4.
+            termination = -100.
+            # traking
+            tracking_lin_vel = 10
+            tracking_ang_vel = 10.
+
+            # regulation in task space
             lin_vel_z = -0.
             ang_vel_xy = -0.0
-            orientation = -0.25 # Rui
-            torques = -5.e-3
+            
+            # regulation in joint space
+            energy = 0.0 # 0.01
+            torques = -4.e-3
             dof_vel = -0.0
             dof_acc = -0
-            base_height = -0. 
+            action_rate = -0.0001 # -0.000001
+
+            # walking specific rewards
             feet_air_time = 0.
             collision = -0.
             feet_stumble = -0.0 
-            action_rate = -0.0
-            stand_still = -0.
-            dof_pos_limits = -1.
-            no_fly = 0.25
+            stand_still = 0.0
+            no_fly = 0.0
             feet_contact_forces = -0.
-            #
-            torque_limits = -0.1
-            dof_vel_limits = -1
-            energy = -0.00002
             
+            # joint limits
+            torque_limits = -0.01
+            dof_vel_limits = -0
+            dof_pos_limits = -10.
+
+            
+            
+            # DRS
+            orientation = 0.0 # Rui
+            base_height = 0.0
+            joint_regularization = 0.0
+
+            # PBRS rewards
+            ori_pb = 5.0
+            baseHeight_pb = 2.0
+            jointReg_pb = 0.0
+            energy_pb = 1.0
+            action_rate_pb = 0.0
+
+            stand_still_pb = 1.0
+            no_fly_pb = 5.0
+            feet_air_time_pb = 1.
 
         only_positive_rewards = False # if true negative total rewards are clipped at zero (avoids early termination problems)
-        tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
-        soft_dof_pos_limit = 0.95 # percentage of urdf limits, values above this limit are penalized
+        
+        tracking_sigma = 0.5 # tracking reward = exp(-error^2/sigma)
+        orientation_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
+        energy_sigma = 1e3
+        action_rate_sigma = 1
+
+        soft_dof_pos_limit = 0.9 # percentage of urdf limits, values above this limit are penalized
         soft_dof_vel_limit = 0.9
         soft_torque_limit = 0.9
-        base_height_target = 1.
+
+        base_height_target = 0.43 # 0.43 for default position of bolt6
         max_contact_force = 300. # forces above this value are penalized
         
         #
@@ -231,18 +267,18 @@ class Bolt6Cfg( LeggedRobotCfg ):
             dof_vel = 0.05
             height_measurements = 5.0
         clip_observations = 100.
-        clip_actions = 100.
+        clip_actions = 25.
 
     class noise:
-        add_noise = True
+        add_noise = False
         noise_level = 1.0 # scales other values
         class noise_scales:
-            dof_pos = 0.01
-            dof_vel = 1.5
+            dof_pos = 0.005
+            dof_vel = 0.01
             lin_vel = 0.1
-            ang_vel = 0.2
+            ang_vel = 0.05
             gravity = 0.05
-            height_measurements = 0.1
+            height_measurements = 0.02
 
     # viewer camera:
     class viewer:
@@ -270,7 +306,7 @@ class Bolt6Cfg( LeggedRobotCfg ):
             contact_collection = 2 # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
 class Bolt6CfgPPO( LeggedRobotCfgPPO ):
-    seed = 1
+    seed = -1
     runner_class_name = 'OnPolicyRunner'
     class policy:
         init_noise_std = 1.0
@@ -290,7 +326,7 @@ class Bolt6CfgPPO( LeggedRobotCfgPPO ):
         entropy_coef = 0.01
         num_learning_epochs = 5
         num_mini_batches = 4 # mini batch size = num_envs*nsteps / nminibatches
-        learning_rate = 1.e-3 #5.e-4
+        learning_rate = 1.e-5 #5.e-4
         schedule = 'adaptive' # could be adaptive, fixed
         gamma = 0.99
         lam = 0.95
@@ -301,7 +337,7 @@ class Bolt6CfgPPO( LeggedRobotCfgPPO ):
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env = 24 # per iteration
-        max_iterations = 1500 # number of policy updates
+        max_iterations = 1000 # number of policy updates
 
         # logging
         save_interval = 50 # check for potential saves every this many iterations

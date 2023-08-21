@@ -49,10 +49,15 @@ def play(args):
     env_cfg.noise.add_noise = False
     env_cfg.domain_rand.randomize_friction = False
     env_cfg.domain_rand.push_robots = False
-    
+    env_cfg.domain_rand.ext_force_robots = True
+    env_cfg.domain_rand.ext_force_vector_6d = [ -20, 0, 0.0, 0, 0, 0]
+    env_cfg.domain_rand.ext_force_start_time = 3.0
+    env_cfg.domain_rand.ext_force_duration = 0.2
+
+
     env_cfg.commands.ranges.lin_vel_x = [2.00, 2.00]
     env_cfg.commands.ranges.lin_vel_y = [0.00, 0.00]
-    env_cfg.commands.ranges.ang_vel_yaw = [0.0, 0.0]
+    env_cfg.commands.ranges.ang_vel_yaw = [-0.0, -0.0]
     env_cfg.commands.ranges.heading = [0, 0]
 
     # env_cfg.init_state.pos = [0.0, 0.0, 1.2] # x,y,z [m]

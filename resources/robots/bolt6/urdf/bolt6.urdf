@@ -51,9 +51,9 @@
   <joint name="FL_HAA" type="revolute">
     <parent link="base_link"/>
     <child link="FL_SHOULDER"/>
-    <!-- <limit effort="2.5" lower="-0.36" upper="1.0472" velocity="20"/> -->
-    <limit effort="2.5" lower="-0.36" upper="1.0472" velocity="20"/>
-    <!-- <limit effort="18" lower="-0.36" upper="1.0472" velocity="20"/> -->
+    <!-- <limit effort="2.5" lower="-0.36" upper="1.0472" velocity="50"/> -->
+    <limit effort="2.5" lower="-0.36" upper="1.0472" velocity="50"/>
+    <!-- <limit effort="18" lower="-0.36" upper="1.0472" velocity="50"/> -->
     <!-- joints rotates around the x-axis -->
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="0.0 0.0636 0"/>
@@ -104,9 +104,9 @@
   <joint name="FL_HFE" type="revolute">
     <parent link="FL_SHOULDER"/>
     <child link="FL_UPPER_LEG"/>
-    <!-- <limit effort="2.5" lower="-1.57" upper="1.57" velocity="20"/> -->
-    <!-- <limit effort="18" lower="-1.57" upper="1.57" velocity="20"/> -->
-    <limit effort="2.5" lower="-1.57" upper="1.57" velocity="20"/>
+    <!-- <limit effort="2.5" lower="-1.57" upper="1.57" velocity="50"/> -->
+    <!-- <limit effort="18" lower="-1.57" upper="1.57" velocity="50"/> -->
+    <limit effort="2.5" lower="-1.57" upper="1.57" velocity="50"/>
     <!-- joints rotates around the y-axis -->
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0 0.0145 -0.0386"/>
@@ -151,10 +151,10 @@
   <joint name="FL_KFE" type="revolute">
     <parent link="FL_UPPER_LEG"/>
     <child link="FL_LOWER_LEG"/>
-    <!-- <limit effort="1000" lower="-2.0944" upper="0" velocity="20"/> -->
-    <!-- <limit effort="2.5" lower="-3.14" upper="0" velocity="20"/> -->
-    <limit effort="2.5" lower="-0.0" upper="3.14" velocity="20"/>
-    <!-- <limit effort="18" lower="-3.14" upper="3.14" velocity="20"/> -->
+    <!-- <limit effort="1000" lower="-2.0944" upper="0" velocity="50"/> -->
+    <!-- <limit effort="2.5" lower="-3.14" upper="0" velocity="50"/> -->
+    <limit effort="2.5" lower="-3.14" upper="0.0" velocity="50"/>
+    <!-- <limit effort="18" lower="-3.14" upper="3.14" velocity="50"/> -->
 
     <!-- joints rotates around the y-axis -->
     <axis xyz="0 1 0"/>
@@ -201,13 +201,13 @@
   <joint name="FL_ANKLE" type="fixed">
     <parent link="FL_LOWER_LEG"/>
     <child link="FL_FOOT"/>
-    <origin rpy="0 0 0" xyz="0 0.008e -0.2"/>
+    <origin rpy="0 0 0" xyz="0 0.008 -0.2"/>
     <!-- joints rotates around the y-axis -->
     <axis xyz="0 1 0"/>
     <!-- Limits (usefull?) -->
-    <!-- <limit effort="2.5" lower="-1" upper="1" velocity="20"/> -->
-    <limit effort="2.5" lower="-1" upper="1" velocity="20"/>
-    <!-- <limit effort="18" lower="-1" upper="1" velocity="20"/> -->
+    <!-- <limit effort="2.5" lower="-1" upper="1" velocity="50"/> -->
+    <limit effort="2.5" lower="-1" upper="1" velocity="50"/>
+    <!-- <limit effort="18" lower="-1" upper="1" velocity="50"/> -->
     <!-- pybullet simulation parameters -->
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
@@ -275,9 +275,9 @@
   <joint name="FR_HAA" type="revolute">
     <parent link="base_link"/>
     <child link="FR_SHOULDER"/>
-    <!-- <limit effort="2.5" lower="-1.0472" upper="0.36" velocity="20"/> -->
-    <limit effort="2.5" lower="-1.0472" upper="0.36" velocity="20"/>
-    <!-- <limit effort="18" lower="-1.0472" upper="0.36" velocity="20"/> -->
+    <!-- <limit effort="2.5" lower="-1.0472" upper="0.36" velocity="50"/> -->
+    <limit effort="2.5" lower="-1.0472" upper="0.36" velocity="50"/>
+    <!-- <limit effort="18" lower="-1.0472" upper="0.36" velocity="50"/> -->
     <!-- joints rotates around the x-axis -->
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="0.0 -0.0636 0"/>
@@ -328,9 +328,9 @@
   <joint name="FR_HFE" type="revolute">
     <parent link="FR_SHOULDER"/>
     <child link="FR_UPPER_LEG"/>
-    <!-- <limit effort="2.5" lower="-1.57" upper="1.57" velocity="20"/> -->
-    <limit effort="2.5" lower="-1.57" upper="1.57" velocity="20"/>
-    <!-- <limit effort="18" lower="-1.57" upper="1.57" velocity="20"/> -->
+    <!-- <limit effort="2.5" lower="-1.57" upper="1.57" velocity="50"/> -->
+    <limit effort="2.5" lower="-1.57" upper="1.57" velocity="50"/>
+    <!-- <limit effort="18" lower="-1.57" upper="1.57" velocity="50"/> -->
     <!-- joints rotates around the y-axis -->
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0 -0.0145 -0.0386"/>
@@ -375,10 +375,10 @@
   <joint name="FR_KFE" type="revolute">
     <parent link="FR_UPPER_LEG"/>
     <child link="FR_LOWER_LEG"/>
-    <!-- <limit effort="1000" lower="-2.0944" upper="0" velocity="20"/> -->
-    <!-- <limit effort="2.5" lower="-3.14" upper="0" velocity="20"/> -->
-    <limit effort="2.5" lower="-0.0" upper="3.14" velocity="20"/>
-    <!-- <limit effort="18" lower="-3.14" upper="3.14" velocity="20"/> -->
+    <!-- <limit effort="1000" lower="-2.0944" upper="0" velocity="50"/> -->
+    <!-- <limit effort="2.5" lower="-3.14" upper="0" velocity="50"/> -->
+    <limit effort="2.5" lower="-3.14" upper="0.0" velocity="50"/>
+    <!-- <limit effort="18" lower="-3.14" upper="3.14" velocity="50"/> -->
 
     <!-- joints rotates around the y-axis -->
     <axis xyz="0 1 0"/>
@@ -429,9 +429,9 @@
     <!-- joints rotates around the y-axis -->
     <axis xyz="0 1 0"/>
     <!-- Limits (usefull?) -->
-    <!-- <limit effort="2.5" lower="-1" upper="1" velocity="20"/> -->
-    <limit effort="2.5" lower="-1" upper="1" velocity="20"/>
-    <!-- <limit effort="18" lower="-1" upper="1" velocity="20"/> -->
+    <!-- <limit effort="2.5" lower="-1" upper="1" velocity="50"/> -->
+    <limit effort="2.5" lower="-1" upper="1" velocity="50"/>
+    <!-- <limit effort="18" lower="-1" upper="1" velocity="50"/> -->
     <!-- pybullet simulation parameters -->
     <dynamics damping="0.0" friction="0.0"/>
   </joint>

@@ -78,30 +78,37 @@ class Bolt10(LeggedRobot):
     def _reward_no_fly(self):
         contacts = self.contact_forces[:, self.feet_indices, 2] > 0.001
         single_contact = torch.sum(1.*contacts, dim=1)==1
-        single_contact *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
+        single_contact *= torch.norm(self.commands[:, :3], dim=1) > 0.1 #no reward for zero command
         return 1.*single_contact
     
     def _reward_feet_air_time(self):
         # Reward long steps
         # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
-        contact = self.contact_forces[:, self.feet_indices, 2] > 0.001
-        contact_filt = torch.logical_or(contact, self.last_contacts) 
-        self.last_contacts = contact
+        contacts = self.contact_forces[:, self.feet_indices, 2] > 0.001
+        single_contact = torch.sum(1.*contacts, dim=1) > 0
+        contact_filt = torch.logical_or(contacts, self.last_contacts) 
+        self.last_contacts = contacts
         first_contact = (self.feet_air_time > 0.) * contact_filt
         self.feet_air_time += self.dt
         rew_airTime = torch.sum( torch.clip(self.feet_air_time - 0.3, min=0.0, max=0.7) * first_contact, dim=1) # reward only on first contact with the ground
-        rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
+        rew_airTime *= torch.norm(self.commands[:, :3], dim=1) > 0.1 #no reward for zero command
+        rew_airTime *= single_contact #no reward for flying or double support
         self.feet_air_time *= ~contact_filt
         return rew_airTime
 
     def _reward_stand_still(self):
         # Penalize motion at zero commands
-        return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1) * (torch.norm(self.commands[:, :2], dim=1) < 0.1)
+        joint_error = torch.mean(torch.square(self.dof_pos - self.default_dof_pos), dim=1)
+        return torch.exp(-joint_error/self.cfg.rewards.tracking_sigma) * (torch.norm(self.commands[:, :3], dim=1) <= 0.1)
 
     def _reward_torques(self):
         # Penalize torques
         return torch.mean(torch.square(self.torques), dim=1)
     
+    def _reward_action_rate(self):
+        # Penalize changes in actions
+        return torch.mean(torch.square( (self.last_actions - self.actions)/self.dt ), dim=1)
+ 
     # def _reward_action_rate(self):
     #     # Penalize changes in actions
     #     action_rate = torch.sum(torch.square( (self.last_actions - self.actions) ), dim=1)
@@ -154,8 +161,11 @@ class Bolt10(LeggedRobot):
             / self.cfg.normalization.obs_scales.dof_pos)
         # Pitch joint symmetry
         error += self.sqrdexp(
-            (self.dof_pos[:, 2] + self.dof_pos[:, 7])
+            ( (self.dof_pos[:, 2]) + (self.dof_pos[:, 7]))
             / self.cfg.normalization.obs_scales.dof_pos)
+        # error += self.sqrdexp(
+        #     ( (self.dof_pos[:, 2]- self.default_dof_pos[:, 2]) + (self.dof_pos[:, 7] - self.default_dof_pos[:, 7]))
+        #     / self.cfg.normalization.obs_scales.dof_pos)
         # print("self.dof_pos[0, 6]: ", self.dof_pos[0, 1], "// self.dof_pos[0, 6]: ", self.dof_pos[0, 6])
         return error/4
 
@@ -168,26 +178,57 @@ class Bolt10(LeggedRobot):
         self.rwd_energyPrev = self._reward_energy()
         self.rwd_actionRatePrev = self._reward_action_rate()
 
-        # self.ext_forces = torch.zeros((self.num_envs, self.num_bodies, 3), device=self.device, dtype=torch.float)
-        # self.ext_torques = torch.zeros((self.num_envs, self.num_bodies, 3), device=self.device, dtype=torch.float)
-       
-        for env_idx in range(self.num_envs):
-            if (self.control_tick[env_idx, 0] >500 )&(self.control_tick[env_idx, 0] <=520 ):
-                self.ext_forces[env_idx, 0, 1] = -200   #index: root, body, force axis(6)
-                # self.ext_torques[env_idx, 0, 1] = 000
-                print("self.ext_forces[env_idx, 0, 1]: ", self.ext_forces[env_idx, 0, 1])
-            else:
-                self.ext_forces = torch.zeros((self.num_envs, self.num_bodies, 3), device=self.device, dtype=torch.float)
-                self.ext_torques = torch.zeros((self.num_envs, self.num_bodies, 3), device=self.device, dtype=torch.float)
-        
-        self.gym.apply_rigid_body_force_tensors(self.sim, gymtorch.unwrap_tensor(self.ext_forces), gymtorch.unwrap_tensor(self.ext_torques), gymapi.ENV_SPACE)
+        self.rwd_standStillPrev = self._reward_stand_still()
+        self.rwd_noFlyPrev = self._reward_no_fly()
+        self.rwd_feetAirTimePrev = self._reward_feet_air_time()
+
+
+    def step(self, actions):
+        """ Apply actions, simulate, call self.post_physics_step()
+
+        Args:
+            actions (torch.Tensor): Tensor of shape (num_envs, num_actions_per_env)
+        """
+        clip_actions = self.cfg.normalization.clip_actions
+        self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
+        self.pre_physics_step()
+        # step physics and render each frame
+        self.render()
+        for _ in range(self.cfg.control.decimation):
+            if self.cfg.domain_rand.ext_force_robots:
+                for env_idx in range(self.num_envs):
+                    if (self.control_tick[env_idx, 0] >self.cfg.domain_rand.ext_force_start_time/self.dt )&(self.control_tick[env_idx, 0] <= (self.cfg.domain_rand.ext_force_start_time+self.cfg.domain_rand.ext_force_duration)/self.dt ):
+                        self.ext_forces[env_idx, 0, 0:3] = torch.tensor(self.cfg.domain_rand.ext_force_vector_6d[0:3], device=self.device, requires_grad=False)    #index: root, body, force axis(6)
+                        self.ext_torques[env_idx, 0, 0:3] = torch.tensor(self.cfg.domain_rand.ext_force_vector_6d[3:6], device=self.device, requires_grad=False)
+                        
+                        # print("self.ext_forces[env_idx, 0, 1]: ", self.ext_forces[env_idx, 0, 1])
+                    else:
+                        self.ext_forces = torch.zeros((self.num_envs, self.num_bodies, 3), device=self.device, dtype=torch.float)
+                        self.ext_torques = torch.zeros((self.num_envs, self.num_bodies, 3), device=self.device, dtype=torch.float)
+            
+                self.gym.apply_rigid_body_force_tensors(self.sim, gymtorch.unwrap_tensor(self.ext_forces), gymtorch.unwrap_tensor(self.ext_torques), gymapi.ENV_SPACE)
+
+            self.torques = self._compute_torques(self.actions).view(self.torques.shape)
+            self.gym.set_dof_actuation_force_tensor(self.sim, gymtorch.unwrap_tensor(self.torques))
+            self.gym.simulate(self.sim)
+            if self.device == 'cpu':
+                self.gym.fetch_results(self.sim, True)
+            self.gym.refresh_dof_state_tensor(self.sim)
+        self.post_physics_step()
+
+        # return clipped obs, clipped states (None), rewards, dones and infos
+        clip_obs = self.cfg.normalization.clip_observations
+        self.obs_buf = torch.clip(self.obs_buf, -clip_obs, clip_obs)
+        if self.privileged_obs_buf is not None:
+            self.privileged_obs_buf = torch.clip(self.privileged_obs_buf, -clip_obs, clip_obs)
+        return self.obs_buf, self.privileged_obs_buf, self.rew_buf, self.reset_buf, self.extras
+
 
     def _post_physics_step_callback(self):
         """ Callback called before computing terminations, rewards, and observations
             Default behaviour: Compute ang vel command based on target and heading, compute measured terrain heights and randomly push robots
         """
         self.control_tick = self.control_tick + 1
-        print("self.control_tick: ", self.control_tick)
         # 
         env_ids = (self.episode_length_buf % int(self.cfg.commands.resampling_time / self.dt)==0).nonzero(as_tuple=False).flatten()
         self._resample_commands(env_ids)
@@ -202,6 +243,23 @@ class Bolt10(LeggedRobot):
             self._push_robots()
 
         
+    def update_command_curriculum(self, env_ids):
+        """ Implements a curriculum of increasing commands
+
+        Args:
+            env_ids (List[int]): ids of environments being reset
+        """
+        # If the tracking reward is above 80% of the maximum, increase the range of commands
+        if torch.mean(self.episode_sums["tracking_lin_vel"][env_ids]) / self.max_episode_length > 0.70 * self.reward_scales["tracking_lin_vel"]:
+            self.command_ranges["lin_vel_x"][0] = np.clip(self.command_ranges["lin_vel_x"][0] - 0.5, -self.cfg.commands.max_curriculum, 0.)
+            self.command_ranges["lin_vel_x"][1] = np.clip(self.command_ranges["lin_vel_x"][1] + 0.5, 0., self.cfg.commands.max_curriculum)
+            self.command_ranges["lin_vel_y"][0] = np.clip(self.command_ranges["lin_vel_y"][0] - 0.5, -self.cfg.commands.max_curriculum, 0.)
+            self.command_ranges["lin_vel_y"][1] = np.clip(self.command_ranges["lin_vel_y"][1] + 0.5, 0., self.cfg.commands.max_curriculum)
+        
+        if torch.mean(self.episode_sums["tracking_ang_vel"][env_ids]) / self.max_episode_length > 0.70 * self.reward_scales["tracking_ang_vel"]:
+            self.command_ranges["ang_vel_yaw"][0] = np.clip(self.command_ranges["ang_vel_yaw"][0] - 0.5, -self.cfg.commands.max_curriculum, 0.)
+            self.command_ranges["ang_vel_yaw"][1] = np.clip(self.command_ranges["ang_vel_yaw"][1] + 0.5, 0., self.cfg.commands.max_curriculum)
+
 
     def _reward_ori_pb(self):
         delta_phi = ~self.reset_buf \
@@ -226,6 +284,21 @@ class Bolt10(LeggedRobot):
     def _reward_action_rate_pb(self):
         delta_phi = ~self.reset_buf \
             * (self._reward_action_rate() - self.rwd_actionRatePrev)
+        return delta_phi / self.dt
+
+    def _reward_stand_still_pb(self):
+        delta_phi = ~self.reset_buf \
+            * (self._reward_stand_still() - self.rwd_standStillPrev)
+        return delta_phi / self.dt
+
+    def _reward_no_fly_pb(self):
+        delta_phi = ~self.reset_buf \
+            * (self._reward_no_fly() - self.rwd_noFlyPrev)
+        return delta_phi / self.dt
+
+    def _reward_feet_air_time_pb(self):
+        delta_phi = ~self.reset_buf \
+            * (self._reward_feet_air_time() - self.rwd_feetAirTimePrev)
         return delta_phi / self.dt
 
     def check_termination(self):

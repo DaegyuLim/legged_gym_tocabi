@@ -45,13 +45,13 @@ class Bolt10Cfg( LeggedRobotCfg ):
         self.dof_vel:  torch.Size([4096, 6])
         self.actions:  torch.Size([4096, 6])
 
-        2 + 1 + 3 + 3 + 3 + 3 + 10 + 10 + 10 = 42(num_observation)
+        2 + 1 + 3 + 3 + 3 + 3 + 10 + 10 + 10 = 45(num_observation)
         '''
         num_privileged_obs = None # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise 
         num_actions = 10 # robot actuation
         env_spacing = 3.  # not used with heightfields/trimeshes 
         send_timeouts = True # send time out information to the algorithm
-        episode_length_s = 20 # episode length in seconds
+        episode_length_s = 10 # episode length in seconds
 
     class terrain( LeggedRobotCfg.terrain):
         mesh_type = 'plane' # "heightfield" # none, plane, heightfield or trimesh
@@ -59,9 +59,9 @@ class Bolt10Cfg( LeggedRobotCfg ):
         vertical_scale = 0.001 # [m] Rui
         border_size = 25 # [m]
         curriculum = False # Rui
-        static_friction = 1.5
-        dynamic_friction = 1.5
-        restitution = 0.
+        static_friction = 1.0
+        dynamic_friction = 1.0
+        restitution = 0.3
         # rough terrain only:
         measure_heights = False
         measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # 1mx1.6m rectangle (without center line)
@@ -167,8 +167,8 @@ class Bolt10Cfg( LeggedRobotCfg ):
         density = 0.001
         angular_damping = 0.
         linear_damping = 0.
-        max_angular_velocity = 5.
-        max_linear_velocity = 5.
+        max_angular_velocity = 20.
+        max_linear_velocity = 20.
         armature = 0.
         thickness = 0.01
 
@@ -180,6 +180,12 @@ class Bolt10Cfg( LeggedRobotCfg ):
         push_robots = True
         push_interval_s = 5
         max_push_vel_xy = 0.3
+
+        ext_force_robots = False
+        ext_force_vector_6d = [0, -20, 0, 0, 0, 0]
+        ext_force_start_time = 5.0
+        ext_force_duration = 0.2
+
 
     class rewards( LeggedRobotCfg.rewards ):
         class scales( LeggedRobotCfg.rewards.scales ):
@@ -197,22 +203,20 @@ class Bolt10Cfg( LeggedRobotCfg ):
             torques = -2.e-3
             dof_vel = -0.0
             dof_acc = -0
-            action_rate = -0.00001 # -0.000001
+            action_rate = -0.0001 # -0.000001
 
             # walking specific rewards
-            feet_air_time = 400.
+            feet_air_time = 0.    # 400
             collision = -0.
             feet_stumble = -0.0 
-            stand_still = -1.0
-            no_fly = 0.5
+            stand_still =  0.0       #3.0
+            no_fly = 0.0            #1.0
             feet_contact_forces = -0.
             
             # joint limits
             torque_limits = -0.01
             dof_vel_limits = -0
             dof_pos_limits = -10.
-
-            
             
             # DRS
             orientation = 0.0 # Rui
@@ -226,6 +230,10 @@ class Bolt10Cfg( LeggedRobotCfg ):
             energy_pb = 1.0
             action_rate_pb = 0.0
 
+            stand_still_pb = 1.0
+            no_fly_pb = 5.0
+            feet_air_time_pb = 1.
+
         only_positive_rewards = False # if true negative total rewards are clipped at zero (avoids early termination problems)
         
         tracking_sigma = 0.5 # tracking reward = exp(-error^2/sigma)
@@ -237,7 +245,7 @@ class Bolt10Cfg( LeggedRobotCfg ):
         soft_dof_vel_limit = 0.9
         soft_torque_limit = 0.9
 
-        base_height_target = 0.50 # 0.527
+        base_height_target = 0.5 # 0.527
         max_contact_force = 300. # forces above this value are penalized
         
         #
@@ -251,7 +259,7 @@ class Bolt10Cfg( LeggedRobotCfg ):
             dof_vel = 0.05
             height_measurements = 5.0
         clip_observations = 100.
-        clip_actions = 100.
+        clip_actions = 44.
 
     class noise:
         add_noise = False
