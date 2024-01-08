@@ -42,15 +42,15 @@
           rgba="0.79216 0.81961 0.93333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0.11 0 0.039"
         rpy="0 0 0" />
       <geometry>
-		<cylinder length="0.088" radius="0.045"/>
+        <cylinder length="0.088" radius="0.045"/>
       </geometry>
-    </collision>
-    <collision>
+    </collision> -->
+    <!-- <collision>
       <origin
         xyz="0.11 0.1025 0.05"
         rpy="0 0 0" />
@@ -65,13 +65,21 @@
       <geometry>
 		<cylinder length="0.11" radius="0.045"/>
       </geometry>
-    </collision>
-    <collision>
+    </collision> -->
+    <!-- <collision>
       <origin
         xyz="-0.0895 0 0.02"
         rpy="0 0 0" />
       <geometry>
         <box size="0.141 0.305 0.05"/>
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin
+        xyz="0.08 0 0.15"
+        rpy="0 0 0" />
+      <geometry>
+        <box size="0.141 0.305 0.35"/>
       </geometry>
     </collision>
   </link>
@@ -123,7 +131,7 @@
       effort="500"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link name="R_HipCenter_Link">
     <inertial>
@@ -173,7 +181,7 @@
       effort="500"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link
     name="R_Thigh_Link">
@@ -240,7 +248,7 @@
       effort="500"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link
     name="R_Knee_Link">
@@ -294,12 +302,12 @@
     <axis
       xyz="0 1 0" />
 	  <limit
-	  lower="0.09"
-	  upper="2.1"
+      lower="0.00"
+      upper="2.1"
       effort="500"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link
     name="R_AnkleCenter_Link">
@@ -355,10 +363,10 @@
 	  <limit
 	  lower="-1.047"
 	  upper="0.523"
-      effort="500"
+      effort="300"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link
     name="R_AnkleRoll_Link">
@@ -413,10 +421,10 @@
 	  <limit
       lower="-0.61"
       upper="0.61"
-      effort="500"
+      effort="300"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link name="R_Foot_Link">
     <inertial>
@@ -531,7 +539,7 @@
       effort="500"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link name="L_HipCenter_Link">
    <inertial>
@@ -580,7 +588,7 @@
       effort="500"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link name="L_Thigh_Link">
    <inertial>
@@ -646,7 +654,7 @@
       effort="500"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link
     name="L_Knee_Link">
@@ -700,12 +708,12 @@
     <axis
       xyz="0 1 0" />
 	  <limit
-      lower="0.09"
+      lower="0.0"
       upper="2.1"
       effort="500"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link
     name="L_AnkleCenter_Link">
@@ -761,10 +769,10 @@
 	  <limit
       lower="-1.047"
       upper="0.523"
-      effort="500"
+      effort="300"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link
     name="L_AnkleRoll_Link">
@@ -820,10 +828,10 @@
 	  <limit
       lower="-0.61"
       upper="0.61"
-      effort="500"
+      effort="300"
       velocity="12" />
     <dynamics
-      damping="5" />
+      damping="0" friction="0" />
   </joint>
   <link name="L_Foot_Link">
     <inertial>
@@ -933,7 +941,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0 -0.096"
         rpy="0 0 0" />
@@ -964,7 +972,7 @@
       <geometry>
         <box size="0.094 0.01 0.091"/>
       </geometry>	  
-    </collision>
+    </collision> -->
   </link>
   <joint name="Waist1_Joint"
     type="fixed">
@@ -1005,7 +1013,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0 0"
         rpy="1.570796 0 0" />
@@ -1028,7 +1036,7 @@
       <geometry>
         <box size="0.09 0.1 0.091"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="Waist2_Joint"
     type="fixed">
@@ -1108,7 +1116,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="-0.03 0 0.2"
         rpy="0 0 0" />
@@ -1155,7 +1163,7 @@
       <geometry>
         <cylinder length="0.07" radius="0.040"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="Upperbody_Joint"
     type="fixed">
@@ -1196,14 +1204,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0 0.05"
         rpy="0 0 0" />
       <geometry>
         <cylinder length="0.043" radius="0.07"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="Neck_Joint"
     type="fixed">
@@ -1244,14 +1252,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0 0.05"
         rpy="0 0 0" />
       <geometry>
         <cylinder length="0.043" radius="0.07"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="Head_Joint"
     type="fixed">
@@ -1292,14 +1300,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0 0.05"
         rpy="0 0 0" />
       <geometry>
         <cylinder length="0.11" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="L_Shoulder1_Joint" type="fixed">
     <origin
@@ -1339,14 +1347,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0.040 0"
         rpy="1.570796 0 0" />
       <geometry>
         <cylinder length="0.05" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="L_Shoulder2_Joint" type="fixed">
     <origin
@@ -1387,14 +1395,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0.06 0"
         rpy="1.570796 0 0" />
       <geometry>
         <cylinder length="0.12" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="L_Shoulder3_Joint" type="fixed">
     <origin
@@ -1434,14 +1442,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0.08 0"
         rpy="1.570796 0 0" />
       <geometry>
         <cylinder length="0.16" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="L_Armlink_Joint" type="fixed">
     <origin
@@ -1482,7 +1490,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0.08 0.0325"
         rpy="1.570796 0 0" />
@@ -1497,12 +1505,12 @@
       <geometry>
         <cylinder length="0.08" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="L_Elbow_Joint" type="fixed">
     <origin
       xyz="0 0.207 -0.0325"
-      rpy="-1.57 0 0" />
+      rpy="0 0 0" />
     <parent
       link="L_Armlink_Link" />
     <child
@@ -1538,7 +1546,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-		<collision>
+		<!-- <collision>
       <origin
         xyz="0 0.05 0"
         rpy="1.570796 0 0" />
@@ -1546,14 +1554,14 @@
         <cylinder length="0.1" radius="0.04"/>
       </geometry>
     </collision>
-	<collision>
+    <collision>
       <origin
         xyz="0 0.1451 0"
         rpy="0 1.570796 0" />
       <geometry>
         <cylinder length="0.08" radius="0.025"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="L_Forearm_Joint" type="fixed">
     <origin
@@ -1593,14 +1601,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    	<collision>
+    	<!-- <collision>
       <origin
         xyz="0 0.046 0"
         rpy="0 0 0" />
       <geometry>
         <cylinder length="0.06" radius="0.02"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="L_Wrist1_Joint" type="fixed">
     <origin
@@ -1691,14 +1699,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0 -0.025"
         rpy="0 0 0" />
       <geometry>
         <box size="0.06 0.06 0.02"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="L_Wrist2_Joint" type="fixed">
     <origin
@@ -1738,14 +1746,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0 0.05"
         rpy="0 0 0" />
       <geometry>
         <cylinder length="0.11" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="R_Shoulder1_Joint" type="fixed">
     <origin
@@ -1786,14 +1794,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 -0.040 0"
         rpy="1.570796 0 0" />
       <geometry>
         <cylinder length="0.05" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="R_Shoulder2_Joint" type="fixed">
     <origin
@@ -1833,14 +1841,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 -0.06 0"
         rpy="1.570796 0 0" />
       <geometry>
         <cylinder length="0.12" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="R_Shoulder3_Joint" type="fixed">
     <origin
@@ -1881,14 +1889,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 -0.08 0"
         rpy="1.570796 0 0" />
       <geometry>
         <cylinder length="0.16" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="R_Armlink_Joint" type="fixed">
     <origin
@@ -1928,7 +1936,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 -0.08 0.0325"
         rpy="1.570796 0 0" />
@@ -1943,12 +1951,12 @@
       <geometry>
         <cylinder length="0.08" radius="0.04"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="R_Elbow_Joint" type="fixed">
     <origin
       xyz="0 -0.207 -0.0325"
-      rpy="1.57 0 0" />
+      rpy="0 0 0" />
     <parent
       link="R_Armlink_Link" />
     <child
@@ -1984,7 +1992,7 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 -0.05 0"
         rpy="1.570796 0 0" />
@@ -1999,7 +2007,7 @@
       <geometry>
         <cylinder length="0.08" radius="0.025"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="R_Forearm_Joint" type="fixed">
     <origin
@@ -2039,14 +2047,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 -0.046 0"
         rpy="0 0 0" />
       <geometry>
         <cylinder length="0.06" radius="0.02"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="R_Wrist1_Joint" type="fixed">
     <origin
@@ -2137,14 +2145,14 @@
           rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
-    <collision>
+    <!-- <collision>
       <origin
         xyz="0 0 -0.025"
         rpy="0 0 0" />
       <geometry>
         <box size="0.06 0.06 0.02"/>
       </geometry>
-    </collision>
+    </collision> -->
   </link>
   <joint name="R_Wrist2_Joint" type="fixed">
     <origin

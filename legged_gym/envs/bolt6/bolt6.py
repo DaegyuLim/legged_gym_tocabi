@@ -97,7 +97,7 @@ class Bolt6(LeggedRobot):
     def _reward_energy(self):
         #veltorque, value  scale or sum
               
-        if self.cfg.rewards.positive_energy_reward:
+        if self.cfg.rewards.only_positive_rewards:
             positive_energy=(self.torques*self.dof_vel).clip(min=0.)
             positive_energy_square = torch.mean(torch.square(positive_energy), dim=1)
             return torch.exp(-positive_energy_square/self.cfg.rewards.energy_sigma)

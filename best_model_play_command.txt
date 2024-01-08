@@ -1,0 +1,2 @@
+$ python play.py --task=bolt6 --load_run=Jul18_19-22-46_bolt6_test
+$ python play.py --task=bolt10 --load_run=Jul18_21-00-08_bolt10_test

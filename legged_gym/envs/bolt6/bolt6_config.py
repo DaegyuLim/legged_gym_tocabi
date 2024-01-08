@@ -257,7 +257,7 @@ class Bolt6Cfg( LeggedRobotCfg ):
         max_contact_force = 300. # forces above this value are penalized
         
         #
-        positive_energy_reward = False
+        only_positive_rewards = False
 
     class normalization:
         class obs_scales:

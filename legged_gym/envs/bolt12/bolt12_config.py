@@ -246,8 +246,6 @@ class Bolt12Cfg( LeggedRobotCfg ):
         base_height_target = 0.50 # 0.527
         max_contact_force = 300. # forces above this value are penalized
         
-        #
-        positive_energy_reward = False
 
     class normalization:
         class obs_scales:
